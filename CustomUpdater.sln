@@ -5,6 +5,14 @@ VisualStudioVersion = 12.0.30110.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomUpdater", "CustomUpdater\CustomUpdater.csproj", "{C0D64A9C-637D-47CA-A3FF-E801F77DFA56}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AdditionalFiles", "AdditionalFiles", "{9B5F806B-68A4-4287-8EFA-C30BDB2DC7F9}"
+	ProjectSection(SolutionItems) = preProject
+		ICSharpCode.SharpZipLib.dll = ICSharpCode.SharpZipLib.dll
+		Settings.xml = Settings.xml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomUpdater.Test", "CustomUpdater.Test\CustomUpdater.Test.csproj", "{7715F080-42D3-4937-8B35-AA09C867BE22}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +23,10 @@ Global
 		{C0D64A9C-637D-47CA-A3FF-E801F77DFA56}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C0D64A9C-637D-47CA-A3FF-E801F77DFA56}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0D64A9C-637D-47CA-A3FF-E801F77DFA56}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7715F080-42D3-4937-8B35-AA09C867BE22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7715F080-42D3-4937-8B35-AA09C867BE22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7715F080-42D3-4937-8B35-AA09C867BE22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7715F080-42D3-4937-8B35-AA09C867BE22}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

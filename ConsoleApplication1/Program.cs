@@ -4,9 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CustomUpdater
+namespace ConsoleApplication1
 {
-    public class Class1
-    {
-    }
+
 }
