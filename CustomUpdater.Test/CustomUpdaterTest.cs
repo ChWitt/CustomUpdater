@@ -10,7 +10,7 @@ namespace CustomUpdater.Test
     [TestMethod, Description("Init Updater")]
     public void TestMethod1()
     {
-      Updater testUpdater = new Updater("D:\\Sources\\Testprojects\\CustomUpdater\\Settings.xml");
+      //Updater testUpdater = new Updater("D:\\Sources\\Testprojects\\CustomUpdater\\Settings.xml");
     }
   }
 }

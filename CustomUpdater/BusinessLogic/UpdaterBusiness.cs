@@ -12,8 +12,16 @@ using System.Windows.Forms;
 
 namespace CustomUpdater.BusinessLogic
 {
+  /// <summary>
+  /// The business logic of the updater
+  /// </summary>
   public class UpdaterBusiness : IUpdaterBusiness
   {
+    /// <summary>
+    /// Loads the settings.
+    /// </summary>
+    /// <param name="xmlSettingsPath">The XML settings path.</param>
+    /// <returns>returns a settings-object with the values of the XML file</returns>
     public Settings LoadSettings(string xmlSettingsPath)
     {
       Settings updaterSettings;
@@ -33,6 +41,12 @@ namespace CustomUpdater.BusinessLogic
       return updaterSettings;
     }
 
+
+    /// <summary>
+    /// Updates the specified updater settings.
+    /// </summary>
+    /// <param name="updaterSettings">The updater settings.</param>
+    /// <returns>the result of the update</returns>
     public EUpdateResult Update(Settings updaterSettings)
     {
       Version currentVersion;      
@@ -49,11 +63,13 @@ namespace CustomUpdater.BusinessLogic
         return updateResult;
       }
 
-      updateResult = this.DownloadDataFiles(updaterSettings);
+      MemoryStream dataStream = null;
+      updateResult = this.DownloadDataFiles(updaterSettings, out dataStream);
       if (updateResult != EUpdateResult.None)
       {
         return updateResult;
       }
+
 
       return EUpdateResult.Success;
     }
@@ -129,10 +145,12 @@ namespace CustomUpdater.BusinessLogic
 
     private EUpdateResult ReplaceFiles(Settings updaterSettings, MemoryStream dataStream)
     {
-      this.RenameOldFiles(updaterSettings.ApplicationPath);
+      Application.Exit();
 
       FastZip fastZip = new FastZip();
       fastZip.ExtractZip(dataStream, updaterSettings.ApplicationPath, FastZip.Overwrite.Always, null, string.Empty, string.Empty, false, true);
+
+      System.Diagnostics.Process proc = System.Diagnostics.Process.Start(Path.Combine(updaterSettings.ApplicationPath, updaterSettings.ExeName));
 
       return EUpdateResult.None;
     }
@@ -141,12 +159,12 @@ namespace CustomUpdater.BusinessLogic
     {
       foreach (string fileName in System.IO.Directory.GetFiles(path))
       {
-        System.IO.File.Move(path + fileName, path + fileName + ".temp");
+        System.IO.File.Move(System.IO.Path.Combine(path,fileName), System.IO.Path.Combine(path ,fileName + ".temp"));
       }
 
       foreach (string dictionaryName in System.IO.Directory.GetDirectories(path))
       {
-        RenameOldFiles(path + dictionaryName);
+        RenameOldFiles(System.IO.Path.Combine(path,dictionaryName));
       }
     }
 
