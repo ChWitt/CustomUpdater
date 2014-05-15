@@ -1,17 +1,15 @@
-﻿using System;
-using System.IO;
-using System.Xml;
-using System.Xml.Serialization;
-using CustomUpdater.DataTypes.Enums;
-using CustomUpdater.DataTypes.Interfaces;
-using CustomUpdater.DataTypes.Objects;
-using System.Text.RegularExpressions;
-using ICSharpCode.SharpZipLib;
-using ICSharpCode.SharpZipLib.Zip;
-using System.Windows.Forms;
-
-namespace CustomUpdater.BusinessLogic
+﻿namespace CustomUpdater.BusinessLogic
 {
+  using System;
+  using System.IO;
+  using System.Text.RegularExpressions;
+  using System.Xml;
+  using System.Xml.Serialization;
+  using CustomUpdater.DataTypes.Enums;
+  using CustomUpdater.DataTypes.Interfaces;
+  using CustomUpdater.DataTypes.Objects;
+  using ICSharpCode.SharpZipLib.Zip;
+
   /// <summary>
   /// The business logic of the updater
   /// </summary>
@@ -41,37 +39,53 @@ namespace CustomUpdater.BusinessLogic
       return updaterSettings;
     }
 
-
     /// <summary>
     /// Updates the specified updater settings.
     /// </summary>
     /// <param name="updaterSettings">The updater settings.</param>
     /// <returns>the result of the update</returns>
-    public EUpdateResult Update(Settings updaterSettings)
+    public EUpdateResult Update(Settings updaterSettings, int processID)
     {
-      Version currentVersion;      
-      EUpdateResult updateResult = EUpdateResult.None;
+      EUpdateResult updateResult;
 
-      if (!this.AreSettingsValid(updaterSettings, out currentVersion))
+      // TODO get admin rights
+      try
       {
-        return EUpdateResult.SettingsAreIncorect;
+        MemoryStream dataStream = null;
+        updateResult = this.CheckUpdatePossible(updaterSettings, out dataStream);
+        if (updateResult == EUpdateResult.None)
+        {
+          System.Diagnostics.Process process = System.Diagnostics.Process.GetProcessById(processID);
+          process.Kill();
+
+          try
+          {
+            this.BackUpOldData();
+            updateResult = this.UpdateDatabase();
+            updateResult = this.UpdateFileData(updaterSettings, dataStream);
+          }
+          catch
+          {
+            updateResult = EUpdateResult.Error;
+          }
+
+          if (updateResult != EUpdateResult.Success)
+          {
+            this.RestoreBackup();
+          }
+
+          // TODO Save Settings with the new version
+
+          System.Diagnostics.Process.Start(process.MainModule.FileName);
+        }
+      }
+      catch (Exception e)
+      {
+        updateResult = EUpdateResult.Error;
+        // TODO Error schreiben
       }
 
-      updateResult = this.IsNewVersionAvailable(updaterSettings.WebUpdateVersionPath, currentVersion);
-      if (updateResult != EUpdateResult.None)
-      {
-        return updateResult;
-      }
-
-      MemoryStream dataStream = null;
-      updateResult = this.DownloadDataFiles(updaterSettings, out dataStream);
-      if (updateResult != EUpdateResult.None)
-      {
-        return updateResult;
-      }
-
-
-      return EUpdateResult.Success;
+      return updateResult;
     }
 
     private bool AreSettingsValid(Settings updaterSettings, out Version currentVersion)
@@ -89,7 +103,7 @@ namespace CustomUpdater.BusinessLogic
         return false;
       }
 
-      if (updaterSettings.TempUpdateFilePath.Length < 1 || 
+      if (updaterSettings.TempUpdateFilePath.Length < 1 ||
         updaterSettings.ApplicationPath.Length < 1 ||
         System.IO.Directory.Exists(updaterSettings.ApplicationPath) ||
         System.IO.Directory.Exists(updaterSettings.TempUpdateFilePath))
@@ -100,28 +114,52 @@ namespace CustomUpdater.BusinessLogic
       return true;
     }
 
-    private EUpdateResult IsNewVersionAvailable(string webUpdateVersionPath, Version currentVersion)
+    private void BackUpOldData()
     {
-      string webVersionString;
-      Version webCurrentVerion;
+      // TODO implement the function
+      throw new NotImplementedException();
+    }
 
-      try
+    private EUpdateResult CheckUpdatePossible(Settings updaterSettings, out MemoryStream dataStream)
+    {
+      EUpdateResult updateResult = EUpdateResult.None;
+      Version currentVersion;
+
+      if (!this.AreSettingsValid(updaterSettings, out currentVersion))
       {
-        webVersionString = new System.Net.WebClient().DownloadString(webUpdateVersionPath);
-      }
-      catch
-      {
-        return EUpdateResult.WebCurrentVersionCantRead;
+        dataStream = null;
+        return EUpdateResult.SettingsAreIncorect;
       }
 
-      if (Version.TryParse(webVersionString, out webCurrentVerion) && 
-          webCurrentVerion.CompareTo(currentVersion) >= 1)
+      updateResult = this.IsNewVersionAvailable(updaterSettings.WebUpdateVersionPath, currentVersion);
+      if (updateResult != EUpdateResult.None)
       {
-        return EUpdateResult.None;
+        dataStream = null;
+        return updateResult;
       }
-      else
+
+      updateResult = this.DownloadDataFiles(updaterSettings, out dataStream);
+      if (updateResult != EUpdateResult.None)
       {
-        return EUpdateResult.NoNewVersionAvailable;
+        return updateResult;
+      }
+
+      return EUpdateResult.None;
+    }
+
+    private void DeleteFiles(string directoryPath)
+    {
+      foreach (string subDirectory in Directory.GetDirectories(directoryPath))
+      {
+        if (subDirectory.EndsWith("UpdateBackUp"))
+        {
+          this.DeleteFiles(subDirectory);
+        }
+      }
+
+      foreach (string fileName in Directory.GetFiles(directoryPath))
+      {
+        File.Delete(fileName);
       }
     }
 
@@ -143,35 +181,51 @@ namespace CustomUpdater.BusinessLogic
       return EUpdateResult.None;
     }
 
-    private EUpdateResult ReplaceFiles(Settings updaterSettings, MemoryStream dataStream)
+    private EUpdateResult IsNewVersionAvailable(string webUpdateVersionPath, Version currentVersion)
     {
-      Application.Exit();
+      string webVersionString;
+      Version webCurrentVerion;
+
+      try
+      {
+        webVersionString = new System.Net.WebClient().DownloadString(webUpdateVersionPath);
+      }
+      catch
+      {
+        return EUpdateResult.WebCurrentVersionCantRead;
+      }
+
+      if (Version.TryParse(webVersionString, out webCurrentVerion) &&
+          webCurrentVerion.CompareTo(currentVersion) >= 1)
+      {
+        return EUpdateResult.None;
+      }
+      else
+      {
+        return EUpdateResult.NoNewVersionAvailable;
+      }
+    }
+
+    private void RestoreBackup()
+    {
+      // TODO implement the function
+      throw new NotImplementedException();
+    }
+
+    private EUpdateResult UpdateDatabase()
+    {
+      // TODO implement the function
+      return EUpdateResult.Success;
+    }
+
+    private EUpdateResult UpdateFileData(Settings updaterSettings, MemoryStream dataStream)
+    {
+      this.DeleteFiles(updaterSettings.ApplicationPath);
 
       FastZip fastZip = new FastZip();
       fastZip.ExtractZip(dataStream, updaterSettings.ApplicationPath, FastZip.Overwrite.Always, null, string.Empty, string.Empty, false, true);
 
-      System.Diagnostics.Process proc = System.Diagnostics.Process.Start(Path.Combine(updaterSettings.ApplicationPath, updaterSettings.ExeName));
-
-      return EUpdateResult.None;
+      return EUpdateResult.Success;
     }
-
-    private void RenameOldFiles(string path)
-    {
-      foreach (string fileName in System.IO.Directory.GetFiles(path))
-      {
-        System.IO.File.Move(System.IO.Path.Combine(path,fileName), System.IO.Path.Combine(path ,fileName + ".temp"));
-      }
-
-      foreach (string dictionaryName in System.IO.Directory.GetDirectories(path))
-      {
-        RenameOldFiles(System.IO.Path.Combine(path,dictionaryName));
-      }
-    }
-
-    private void DeleteOldFiles(string path)
-    {
-
-    }
-
   }
 }

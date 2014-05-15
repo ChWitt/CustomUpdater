@@ -9,37 +9,38 @@ namespace CustomUpdater.DataTypes.Enums
   /// </summary>
   public enum EUpdateResult
   {
+    None = 0,
+
     /// <summary>
     /// the Update is success
     /// </summary>
-    Success = 0,
+    Success = 1,
 
     /// <summary>
     /// The settings-file is not correct
     /// </summary>
-    SettingsAreIncorect = 1,
+    SettingsAreIncorect = 2,
 
     /// <summary>
     /// The web current version cant read, maybe the site is not available
     /// </summary>
-    WebCurrentVersionCantRead = 2,
+    WebCurrentVersionCantRead = 3,
 
     /// <summary>
     /// no new version available
     /// </summary>
-    NoNewVersionAvailable = 3,
+    NoNewVersionAvailable = 4,
 
     /// <summary>
     /// The web data cant download, maybe the site is not available
     /// </summary>
-    WebDatasCantDownload = 4,
+    WebDatasCantDownload = 5,
 
     /// <summary>
     /// general undefined error
     /// </summary>
     Error = 100,
 
-    None = 101,
   }
 
 }
